@@ -1,0 +1,180 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "form-submission",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8abec877-b1ca-4f67-9fbd-102c33907ab4",
+      "name": "Receive Lead Submission",
+      "webhookId": "228ea8ec-890e-4a38-9652-a9deaab01c81"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "164905c2-3977-4840-af30-8859c129e55f",
+              "name": "lead_name",
+              "value": "={{ ($json.body.fullName ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "a6e8b556-54b1-49cf-b424-6619ff214630",
+              "name": "lead_email",
+              "value": "={{ ($json.body.email ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "cb954ceb-8738-408d-b640-4722147e0896",
+              "name": "lead_company",
+              "value": "={{ ($json.body.company ?? '').trim() || 'Not provided' }}",
+              "type": "string"
+            },
+            {
+              "id": "4f33c153-7ab4-4b16-838b-7013e0618de4",
+              "name": "lead_message",
+              "value": "={{ ($json.body.query ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "8fad2338-7026-483e-b578-6222cb5eb4f7",
+              "name": "received_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c387f541-18de-4a81-ac5e-94d0642ac869",
+      "name": "Format Lead Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1562458320508555375",
+          "mode": "list",
+          "cachedResultName": "Lead Alert System",
+          "cachedResultUrl": "https://discord.com/channels/1562458320508555375"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1562458321166794845",
+          "mode": "list",
+          "cachedResultName": "general",
+          "cachedResultUrl": "https://discord.com/channels/1562458320508555375/1562458321166794845"
+        },
+        "content": "=## 🚨 New Lead Received\n\n**Lead Details**\n**Name:** {{ $json.lead_name }}\n**Email:** {{ $json.lead_email }}\n**Company:** {{ $json.lead_company }}\n\n**Message:**\n> {{ $json.lead_message }}\n\n **Received:** {{ DateTime.fromISO($json.received_at).setZone('Asia/Kolkata').toFormat('dd LLL yyyy, hh:mm a') }} IST",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "3115802a-3c32-458d-b698-03a6bff86384",
+      "name": "Send Internal Discord Alert",
+      "webhookId": "0e0e2df4-50ba-4692-96ce-2f418cf59baa",
+      "credentials": {
+        "discordOAuth2Api": {
+          "id": "OxUnMx2eYzYf588l",
+          "name": "Discord account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.lead_email }}",
+        "subject": "=We received your inquiry, {{ $json.lead_name }}",
+        "emailType": "text",
+        "message": "=Hello {{ $json.lead_name }},\n\nThank you for contacting us. We have received your inquiry:\n\n\"{{ $json.lead_message }}\"\n\nOur team will review your message and respond within 24–48 business hours.\n\nBest regards,  \nCustomer Support Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        144
+      ],
+      "id": "8f4cfa47-02b8-4849-886e-481c5e2c559e",
+      "name": "Send Customer Confirmation Email",
+      "webhookId": "915a6480-fc9e-4ea9-a661-4d110468d781",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "a5CYwlvDObW0feUi",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Lead Submission": {
+      "main": [
+        [
+          {
+            "node": "Format Lead Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Lead Fields": {
+      "main": [
+        [
+          {
+            "node": "Send Customer Confirmation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Internal Discord Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Customer Confirmation Email": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "63078d28-6294-43d5-b594-5bc887e8a16c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5417d9cfbfcdd71d3fecf0f68518d4b5f4fdd3be14c0874c9e7ed5481e5c443"
+  },
+  "nodeGroups": [],
+  "id": "gPKAMoDduh3HDhmG",
+  "tags": []
+}
