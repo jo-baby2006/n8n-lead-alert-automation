@@ -80,3 +80,17 @@ Screenshots included with the submission:
 1. Workflow execution with green checkmarks on all four nodes
 2. The Discord alert message
 3. The customer confirmation email in the inbox
+
+## Screenshots
+
+### Successful execution (all nodes green)
+![Execution proof](screenshots/execution-proof.png)
+
+### Workflow canvas
+![Workflow canvas](screenshots/workflow-canvas.png)
+
+### Discord alert
+![Discord alert](screenshots/discord-alert.png)
+
+### Customer confirmation email
+![Customer email](screenshots/customer-email.png)
